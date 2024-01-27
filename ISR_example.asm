@@ -285,7 +285,7 @@ time_hour_pressed:
 Timer2_ISR_da_sec:
 	da a 
 	mov time_sec_counter, a
-	mov a, time_sec_counter
+	;mov a, time_sec_counter
 	cjne a, #0x60, Timer2_ISR_done
 	clr a 
 	mov time_sec_counter, a
@@ -296,7 +296,7 @@ Timer2_ISR_da_sec:
 Timer2_ISR_da_min:
 	da a
 	mov time_min_counter, a 
-	mov a, time_min_counter
+	;mov a, time_min_counter
 	cjne a, #0x60, Timer2_ISR_done
 	clr a 
 	mov time_min_counter, a
@@ -307,7 +307,7 @@ Timer2_ISR_da_min:
 Timer2_ISR_da_hour:
 	da a
 	mov time_hour_counter, a 
-	mov a, time_hour_counter
+	;mov a, time_hour_counter
 	cjne a, #0x12, Timer2_ISR_done
 	clr a 
 	mov time_hour_counter, a 
@@ -346,7 +346,7 @@ set_sec_pressed:
 	add a, #0x01
 	da a 
 	mov set_sec_counter, a 
-    mov a, set_sec_counter
+        ;mov a, set_sec_counter
 	cjne a, #0x60, Timer2_ISR_done
 	clr a 
 	mov set_sec_counter, a 
@@ -357,7 +357,7 @@ set_min_pressed:
 	add a, #0x01
 	da a 
 	mov set_min_counter, a 
-    mov a, set_min_counter
+        ;mov a, set_min_counter
 	cjne a, #0x60, Timer2_ISR_done
 	clr a 
 	mov set_min_counter, a 
@@ -368,7 +368,7 @@ alarm_hour_set:
 	add a, #0x01
 	da a 
 	mov set_hour_counter, a 
-    mov a, set_hour_counter
+        ;mov a, set_hour_counter
 	cjne a, #0x12, Timer2_ISR_done
 	clr a
 	mov set_hour_counter, a 
