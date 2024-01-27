@@ -32,7 +32,7 @@ TIMER2_RELOAD EQU ((65536-(CLK/TIMER2_RATE)))
 ;-----------------------------------------------------------------------------------------------
 Time_Hour_Button equ P3.0  
 Time_Min_Button equ P1.6  
-Time_Sec_Button_Button equ P1.5  
+Time_Sec_Button equ P1.5  
 
 Set_Hour_Button equ P1.2
 Set_Min_Button equ P1.1
@@ -258,7 +258,7 @@ Inc_Done:
 	jnb Time_Min_Button, time_min_pressed
 	jnb Time_Hour_Button, time_hour_pressed
 
-        jnb Set_Sec_Button, set_sec_pressed
+    jnb Set_Sec_Button, set_sec_pressed
 	jnb Set_Min_Button, set_min_pressed
 	jnb Set_Hour_Button,set_pre_hour_pressed              ;alarm_hour_set
 
