@@ -30,14 +30,13 @@ TIMER2_RELOAD EQU ((65536-(CLK/TIMER2_RATE)))
 
 ;SETUP THE PUSH button
 ;-----------------------------------------------------------------------------------------------
+Time_Hour_Button equ P3.0  
+Time_Min_Button equ P1.6  
+Time_Sec_Button_Button equ P1.5  
 
-Time_Hour equ P3.0  
-Time_Min equ P1.6  
-Time_Sec equ P1.5  
-
-Set_Hour equ P1.2
-Set_Min equ P1.1
-Set_Sec equ P1.0
+Set_Hour_Button equ P1.2
+Set_Min_Button equ P1.1
+Set_Sec_Button equ P1.0
 
 SOUND_out equ P1.7
 ;-----------------------------------------------------------------------------------------------
@@ -78,16 +77,16 @@ Count1ms:     ds 2 ; Used to determine when half second has passed
 
 ;Define variable: ds=(data space) 1
 ;-----------------------------------------------------------------------------------------------
-BCD_counter_time_sec:  ds 1 
-BCD_counter_time_min:  ds 1 
-BCD_counter_time_hour: ds 1 
+time_sec_counter:  ds 1 
+time_min_counter:  ds 1 
+time_hour_counter: ds 1 
 
-BCD_counter_set_sec:  ds 1 
-BCD_counter_set_min:  ds 1 
-BCD_counter_set_hour: ds 1 
+set_sec_counter:  ds 1 
+set_min_counter:  ds 1 
+set_hour_counter: ds 1 
 
-AP:       ds 1 ; AMPM
-AP_alarm: ds 1 ; AMPM_alarm
+Time_AP:       ds 1 ; AMPM
+Set_AP: ds 1 ; AMPM_alarm
 
 AM: db 'AM', 0
 PM: db 'PM', 0
@@ -105,9 +104,9 @@ half_seconds_flag: dbit 1 ; Set to one in the ISR every time 500 ms had passed
 ;cseg, refers to code segment,  region of memory that stores the executable code of a program
 ;-----------------------------------------------------------------------------------------------
 
-A_P: dbit 1 
+AP_time_var: dbit 1 
 bseg
-A_P_alarm: dbit 1 
+AP_set_var: dbit 1 
 bseg
 sec: dbit 1
 bseg
@@ -115,13 +114,13 @@ min: dbit 1
 bseg
 hour: dbit 1
 bseg
-alarm_sec: dbit 1
+set_sec_var: dbit 1
 bseg
-alarm_min: dbit 1
+set_min_var: dbit 1
 bseg
-alarm_hour: dbit 1
+set_hour_var: dbit 1
 bseg
-alarm_AP: dbit 1
+set_AP_var: dbit 1
 cseg
 
 ;-----------------------------------------------------------------------------------------------
@@ -176,26 +175,26 @@ Timer0_ISR:
 	mov TL0, #low(TIMER0_RELOAD)
 	setb TR0
 
-  ;jnb - Jump if Bit Not Set:
+        ;jnb - Jump if Bit Not Set:
 	;reti - Return from Interrupt:
 	;-----------------------------------------------------------------------------------------------
-	jnb alarm_AP, loop_sec
-	jnb alarm_sec, loop_sec
-	jnb alarm_min, loop_min
-	jnb alarm_hour, loop_hour
+	jnb set_AP_var, loop_sec
+	jnb set_sec_var, loop_sec
+	jnb set_min_var, loop_min
+	jnb set_hour_var, loop_hour
 
 	cpl SOUND_OUT ; Connect speaker the pin assigned to 'SOUND_OUT'!
 	reti
 
 loop_hour:
-	clr alarm_hour
+	clr set_hour_var
 
 loop_min:
-	clr alarm_min
+	clr set_min_var
 
 loop_sec:	
-	clr alarm_AP
-	clr alarm_sec
+	clr set_AP_var
+	clr set_sec_var
 	reti
 
 ;-----------------------------------------------------------------------------------------------
@@ -255,16 +254,16 @@ Inc_Done:
 
 
   ;-----------------------------------------------------------------------------------------------
-	jnb Time_Sec, second_set
-	jnb Time_Min, minute_set
-	jnb Time_hour, hour_set
+	jnb Time_Sec_Button, second_set
+	jnb Time_Min_Button, minute_set
+	jnb Time_Hour_Button, hour_set
 
-    jnb Set_Sec, alarm_sec_set
-	jnb Set_Min, alarm_min_set
-	jnb Set_Hour,alarm_pre_hour_set              ;alarm_hour_set
+    jnb Set_Sec_Button, alarm_sec_set
+	jnb Set_Min_Button, alarm_min_set
+	jnb Set_Hour_Button,alarm_pre_hour_set              ;alarm_hour_set
 
 	; Increment the BCD counter
-	mov a, BCD_counter_time_sec
+	mov a, time_sec_counter
 	add a, #0x01
 	sjmp Timer2_ISR_da_sec
 
@@ -276,71 +275,71 @@ Inc_Done:
 ;	add a, #0x99 ; Adding the 10-complement of -1 is like subtracting 1.
 
 second_set:
-	mov a, BCD_counter_time_sec
+	mov a, time_sec_counter
 	add a, #0x01
 	sjmp Timer2_ISR_da_sec
 
 	
 minute_set:
-	mov a, BCD_counter_time_min
+	mov a, time_min_counter
 	add a, #0x01
 	sjmp Timer2_ISR_da_min
 
 hour_set:
-	mov a, BCD_counter_time_hour
+	mov a, time_hour_counter
 		add a, #0x01
 	sjmp Timer2_ISR_da_hour
 
 Timer2_ISR_da_sec:
 	da a ; Decimal adjust instruction.  Check datasheet for more details!
-	mov BCD_counter_time_sec, a
-	mov a, BCD_counter_time_sec
+	mov time_sec_counter, a
+	mov a, time_sec_counter
 	cjne a, #0x60, Timer2_ISR_done
 	clr a 
-	mov BCD_counter_time_sec, a
-	mov a, BCD_counter_time_min
+	mov time_sec_counter, a
+	mov a, time_min_counter
 	add a, #0x01
-	mov BCD_counter_time_min, a
+	mov time_min_counter, a
 	
 Timer2_ISR_da_min:
 	da a
-	mov BCD_counter_time_min, a 
-	mov a, BCD_counter_time_min
+	mov time_min_counter, a 
+	mov a, time_min_counter
 	cjne a, #0x60, Timer2_ISR_done
 	clr a 
-	mov BCD_counter_time_min, a
-	mov a, BCD_counter_time_hour
+	mov time_min_counter, a
+	mov a, time_hour_counter
 	add a, #0x01
-	mov BCD_counter_time_hour, a 
+	mov time_hour_counter, a 
 
 Timer2_ISR_da_hour:
 	da a
-	mov BCD_counter_time_hour, a 
-	mov a, BCD_counter_time_hour
+	mov time_hour_counter, a 
+	mov a, time_hour_counter
 	cjne a, #0x12, Timer2_ISR_done
 	clr a 
-	mov BCD_counter_time_hour, a 
-	cpl A_P
+	mov time_hour_counter, a 
+	cpl AP_time_var
 
 Timer2_ISR_done:
-	mov a, BCD_counter_time_sec
-	cjne a, BCD_counter_set_sec, sec_not_same
-	setb alarm_sec
+	mov a, time_sec_counter
+	cjne a, set_sec_counter, sec_not_same
+	setb set_sec_var
 
 sec_not_same:
-	mov a, BCD_counter_time_min
-	cjne a, BCD_counter_set_min, min_not_same
-	setb alarm_min
+	mov a, time_min_counter
+	cjne a, set_min_counter, min_not_same
+	setb set_min_var
 
 min_not_same:
-	mov a, BCD_counter_time_hour
-	cjne a, BCD_counter_set_hour, hour_not_same
-	setb alarm_hour
+	mov a, time_hour_counter
+	cjne a, set_hour_counter, hour_not_same
+	setb set_hour_var
 
 hour_not_same:
-	mov a, AP
-	cjne a, AP_alarm, done
-	setb alarm_AP
+	mov a, Time_AP
+	cjne a, Set_AP, done
+	setb set_AP_var
 
 done:
 	pop psw
@@ -351,37 +350,37 @@ alarm_pre_hour_set:
 	sjmp alarm_hour_set
 
 alarm_sec_set:
-	mov a, BCD_counter_set_sec
+	mov a, set_sec_counter
 	add a, #0x01
 	da a 
-	mov BCD_counter_set_sec, a 
-    mov a, BCD_counter_set_sec
+	mov set_sec_counter, a 
+    mov a, set_sec_counter
 	cjne a, #0x60, Timer2_ISR_done
 	clr a 
-	mov BCD_counter_set_sec, a 
+	mov set_sec_counter, a 
 	sjmp Timer2_ISR_done
 
 alarm_min_set:
-	mov a, BCD_counter_set_min
+	mov a, set_min_counter
 	add a, #0x01
 	da a 
-	mov BCD_counter_set_min, a 
-    mov a, BCD_counter_set_min
+	mov set_min_counter, a 
+    mov a, set_min_counter
 	cjne a, #0x60, Timer2_ISR_done
 	clr a 
-	mov BCD_counter_set_min, a 
+	mov set_min_counter, a 
 	sjmp Timer2_ISR_done
 
 alarm_hour_set:
-	mov a, BCD_counter_set_hour
+	mov a, set_hour_counter
 	add a, #0x01
 	da a 
-	mov BCD_counter_set_hour, a 
-    mov a, BCD_counter_set_hour
+	mov set_hour_counter, a 
+    mov a, set_hour_counter
 	cjne a, #0x12, Timer2_ISR_done
 	clr a
-	mov BCD_counter_set_hour, a 
-	cpl A_P_alarm
+	mov set_hour_counter, a 
+	cpl AP_set_var
 	sjmp Timer2_ISR_done
 
 ;---------------------------------;
@@ -415,61 +414,61 @@ main:
 
 
     setb half_seconds_flag
-	  mov BCD_counter_time_sec,  #0x00
-		mov BCD_counter_time_min,  #0x00
-		mov BCD_counter_time_hour, #0x00
+	  mov time_sec_counter,  #0x00
+		mov time_min_counter,  #0x00
+		mov time_hour_counter, #0x00
 
-		mov BCD_counter_set_sec,  #0x00
-		mov BCD_counter_set_min,  #0x10
-		mov BCD_counter_set_hour, #0x00
+		mov set_sec_counter,  #0x00
+		mov set_min_counter,  #0x10
+		mov set_hour_counter, #0x00
 
-		mov AP, #0x00
-		mov AP_alarm, #0x00
+		mov Time_AP, #0x00
+		mov Set_AP, #0x00
 
-		clr A_P
-		clr A_P_alarm
-		clr alarm_sec
-		clr alarm_min
-		clr alarm_hour
+		clr AP_time_var
+		clr AP_set_var
+		clr set_sec_var
+		clr set_min_var
+		clr set_hour_var
 	
 	; After initialization the program stays in this 'forever' loop
 loop_b:
   clr half_seconds_flag ; We clear this flag in the main loop, but it is set in the ISR for timer 2
 	Set_Cursor(1, 15)     ; the place in the LCD where we want the BCD counter value
-	jb A_P, PM_l
+	jb AP_time_var, PM_l
 	Send_Constant_String(#AM)
-	mov AP, #0x00
+	mov Time_AP, #0x00
 
 loop:
 	Set_Cursor(2,15)
-	jb A_P_alarm, PM_l_alarm
+	jb AP_set_var, PM_l_alarm
 	Send_Constant_String(#AM)
-	mov AP_alarm, #0x00
+	mov Set_AP, #0x00
 	sjmp loop_repeat
 
 PM_l:
 	Send_Constant_String(#PM)
-	mov AP, #0x01
+	mov Time_AP, #0x01
 	sjmp loop
 
 PM_l_alarm:
 	Send_Constant_String(#PM)
-	mov AP_alarm, #0x01
+	mov Set_AP, #0x01
 
 loop_repeat:
 	Set_Cursor(1,12)
-	display_BCD(BCD_counter_time_sec)
+	display_BCD(time_sec_counter)
 	Set_Cursor(1,9)
-	display_BCD(BCD_counter_time_min)
+	display_BCD(time_min_counter)
 	Set_Cursor(1,6)
-	display_BCD(BCD_counter_time_hour)
+	display_BCD(time_hour_counter)
 
   Set_Cursor(2,12)
-	display_BCD(BCD_counter_set_sec)
+	display_BCD(set_sec_counter)
 	Set_Cursor(2,9)
-	display_BCD(BCD_counter_set_min)
+	display_BCD(set_min_counter)
 	Set_Cursor(2,6)
-	display_BCD(BCD_counter_set_hour)
+	display_BCD(set_hour_counter)
 
   ljmp loop_b
 	
