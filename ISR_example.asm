@@ -240,9 +240,9 @@ Timer2_ISR:
 Inc_Done:
 	; Check if half second has passed
 	mov a, Count1ms+0
-	cjne a, #low(200), Timer2_ISR_done ; Warning: this instruction changes the carry flag!
+	cjne a, #low(500), Timer2_ISR_done ; Warning: this instruction changes the carry flag!
 	mov a, Count1ms+1
-	cjne a, #high(200), Timer2_ISR_done
+	cjne a, #high(500), Timer2_ISR_done
 	
 	; 500 milliseconds have passed.  Set a flag so the main program knows
 	setb half_seconds_flag ; Let the main program know half second had passed
@@ -254,44 +254,36 @@ Inc_Done:
 
 
   ;-----------------------------------------------------------------------------------------------
-	jnb Time_Sec_Button, second_set
-	jnb Time_Min_Button, minute_set
-	jnb Time_Hour_Button, hour_set
+	jnb Time_Sec_Button, time_sec_pressed
+	jnb Time_Min_Button, time_min_pressed
+	jnb Time_Hour_Button, time_hour_pressed
 
-    jnb Set_Sec_Button, alarm_sec_set
-	jnb Set_Min_Button, alarm_min_set
-	jnb Set_Hour_Button,alarm_pre_hour_set              ;alarm_hour_set
+        jnb Set_Sec_Button, set_sec_pressed
+	jnb Set_Min_Button, set_min_pressed
+	jnb Set_Hour_Button,set_pre_hour_pressed              ;alarm_hour_set
 
 	; Increment the BCD counter
 	mov a, time_sec_counter
 	add a, #0x01
 	sjmp Timer2_ISR_da_sec
-
-  ;jnb UPDOWN, Timer2_ISR_decrement
 	;-----------------------------------------------------------------------------------------------
-
-
-;Timer2_ISR_decrement:
-;	add a, #0x99 ; Adding the 10-complement of -1 is like subtracting 1.
-
-second_set:
+time_sec_pressed:
 	mov a, time_sec_counter
 	add a, #0x01
 	sjmp Timer2_ISR_da_sec
 
-	
-minute_set:
+time_min_pressed:
 	mov a, time_min_counter
 	add a, #0x01
 	sjmp Timer2_ISR_da_min
 
-hour_set:
+time_hour_pressed:
 	mov a, time_hour_counter
 		add a, #0x01
 	sjmp Timer2_ISR_da_hour
 
 Timer2_ISR_da_sec:
-	da a ; Decimal adjust instruction.  Check datasheet for more details!
+	da a 
 	mov time_sec_counter, a
 	mov a, time_sec_counter
 	cjne a, #0x60, Timer2_ISR_done
@@ -346,10 +338,10 @@ done:
 	pop acc
 	reti
 
-alarm_pre_hour_set:
+set_pre_hour_pressed:
 	sjmp alarm_hour_set
 
-alarm_sec_set:
+set_sec_pressed:
 	mov a, set_sec_counter
 	add a, #0x01
 	da a 
@@ -360,7 +352,7 @@ alarm_sec_set:
 	mov set_sec_counter, a 
 	sjmp Timer2_ISR_done
 
-alarm_min_set:
+set_min_pressed:
 	mov a, set_min_counter
 	add a, #0x01
 	da a 
