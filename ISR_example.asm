@@ -31,9 +31,9 @@ TIMER2_RELOAD EQU ((65536-(CLK/TIMER2_RATE)))
 ;SETUP THE PUSH button
 ;-----------------------------------------------------------------------------------------------
 
-Time_Hour equ P3.0 ;Updown3 
-Time_Min equ P1.6  ;Updown2
-Time_Sec equ P1.5  ;Updown1
+Time_Hour equ P3.0  
+Time_Min equ P1.6  
+Time_Sec equ P1.5  
 
 Set_Hour equ P1.2
 Set_Min equ P1.1
