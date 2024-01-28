@@ -108,12 +108,6 @@ AP_time_var: dbit 1
 bseg
 AP_set_var: dbit 1 
 bseg
-sec: dbit 1
-bseg
-min: dbit 1
-bseg
-hour: dbit 1
-bseg
 set_sec_var: dbit 1
 bseg
 set_min_var: dbit 1
